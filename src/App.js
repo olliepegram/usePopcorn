@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const tempMovieData = [
 	{
@@ -54,14 +54,16 @@ export default function App() {
 	const [query, setQuery] = useState('');
 	const [movies, setMovies] = useState(tempMovieData);
 
-	const handleQuerySearch = (search) => {
-		setQuery(search);
-
+	useEffect(() => {
 		setMovies((movies) =>
 			movies.filter((movie) =>
-				movie.Title.toLowerCase().includes(search.toLowerCase())
+				movie.Title.toLowerCase().includes(query.toLowerCase())
 			)
 		);
+	}, [query]);
+
+	const handleQuerySearch = (search) => {
+		setQuery(search);
 		console.log(movies);
 	};
 
@@ -70,6 +72,7 @@ export default function App() {
 			<NavBar
 				query={query}
 				onSearch={handleQuerySearch}
+				movies={movies}
 			/>
 
 			<Main movies={movies} />
@@ -77,7 +80,7 @@ export default function App() {
 	);
 }
 
-function NavBar({ query, onSearch }) {
+function NavBar({ query, onSearch, movies }) {
 	return (
 		<nav className='nav-bar'>
 			<Logo />
@@ -85,15 +88,15 @@ function NavBar({ query, onSearch }) {
 				query={query}
 				onSearch={onSearch}
 			/>
-			<NumResults />
+			<NumResults movies={movies} />
 		</nav>
 	);
 }
 
-function NumResults() {
+function NumResults({ movies }) {
 	return (
 		<p className='num-results'>
-			Found <strong>X</strong> results
+			Found <strong>{movies.length}</strong> results
 		</p>
 	);
 }
