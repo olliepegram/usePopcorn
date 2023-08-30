@@ -55,11 +55,11 @@ export default function App() {
 	const [movies, setMovies] = useState(tempMovieData);
 
 	useEffect(() => {
-		setMovies((movies) =>
-			movies.filter((movie) =>
-				movie.Title.toLowerCase().includes(query.toLowerCase())
-			)
+		const filteredMovies = tempMovieData.filter((movie) =>
+			movie.Title.toLowerCase().includes(query.toLowerCase())
 		);
+
+		setMovies(filteredMovies);
 	}, [query]);
 
 	const handleQuerySearch = (search) => {
