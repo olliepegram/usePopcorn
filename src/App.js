@@ -50,21 +50,46 @@ const tempWatchedData = [
 const average = (arr) =>
 	arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
+const KEY = '43af66d1';
+
 export default function App() {
-	const [query, setQuery] = useState('');
+	const [query, setQuery] = useState('back');
 	const [movies, setMovies] = useState(tempMovieData);
+	const [isLoading, setIsLoading] = useState(false);
+	const [error, setError] = useState('');
 	const [watched, setWatched] = useState(tempWatchedData);
 
 	useEffect(() => {
-		const filteredMovies = tempMovieData.filter((movie) =>
-			movie.Title.toLowerCase().includes(query.toLowerCase())
-		);
+		async function fetchMovies() {
+			try {
+				setIsLoading(true);
+				const res = await fetch(
+					`http://www.omdbapi.com/?apikey=${KEY}&s=${query}`
+				);
 
-		setMovies(filteredMovies);
+				if (!res.ok)
+					throw new Error('Something went wrong with fetching movies');
+				const data = await res.json();
+				if (data.Response === false) throw new Error('Movie not found');
+
+				setMovies(data.Search);
+				setError('');
+			} catch (err) {
+				setError(err.message);
+			} finally {
+				setIsLoading(false);
+			}
+		}
+		fetchMovies();
 	}, [query]);
 
 	const handleQuerySearch = (search) => {
 		setQuery(search);
+		const filteredMovies = movies.filter((movie) =>
+			movie.Title.toLowerCase().includes(query.toLowerCase())
+		);
+
+		setMovies(filteredMovies);
 		console.log(movies);
 	};
 
@@ -80,7 +105,9 @@ export default function App() {
 
 			<Main>
 				<Box>
-					<MovieList movies={movies} />
+					{isLoading && <Loader />}
+					{!isLoading && !error && <MovieList movies={movies} />}
+					{error && <ErrorMessage message={error} />}
 				</Box>
 				<Box>
 					<WatchedSummary watched={watched} />
@@ -88,6 +115,19 @@ export default function App() {
 				</Box>
 			</Main>
 		</>
+	);
+}
+
+function Loader() {
+	return <p className='loader'>Loader..</p>;
+}
+
+function ErrorMessage({ message }) {
+	return (
+		<p className='error'>
+			<span>❌ </span>
+			{message}
+		</p>
 	);
 }
 
