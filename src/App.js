@@ -53,7 +53,7 @@ const average = (arr) =>
 const KEY = '43af66d1';
 
 export default function App() {
-	const [query, setQuery] = useState('back');
+	const [query, setQuery] = useState('');
 	const [movies, setMovies] = useState(tempMovieData);
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState('');
@@ -63,6 +63,7 @@ export default function App() {
 		async function fetchMovies() {
 			try {
 				setIsLoading(true);
+				setError('');
 				const res = await fetch(
 					`http://www.omdbapi.com/?apikey=${KEY}&s=${query}`
 				);
@@ -80,25 +81,22 @@ export default function App() {
 				setIsLoading(false);
 			}
 		}
+
+		if (!query.length) {
+			setMovies([]);
+			setError('');
+			return;
+		}
+
 		fetchMovies();
 	}, [query]);
-
-	const handleQuerySearch = (search) => {
-		setQuery(search);
-		const filteredMovies = movies.filter((movie) =>
-			movie.Title.toLowerCase().includes(query.toLowerCase())
-		);
-
-		setMovies(filteredMovies);
-		console.log(movies);
-	};
 
 	return (
 		<>
 			<NavBar>
 				<Search
 					query={query}
-					onSearch={handleQuerySearch}
+					setQuery={setQuery}
 				/>
 				<NumResults movies={movies} />
 			</NavBar>
@@ -143,7 +141,7 @@ function NavBar({ children }) {
 function NumResults({ movies }) {
 	return (
 		<p className='num-results'>
-			Found <strong>{movies.length}</strong> results
+			Found <strong>{!movies ? '0' : movies.length}</strong> results
 		</p>
 	);
 }
@@ -157,14 +155,14 @@ function Logo() {
 	);
 }
 
-function Search({ query, onSearch }) {
+function Search({ query, setQuery }) {
 	return (
 		<input
 			className='search'
 			type='text'
 			placeholder='Search movies...'
 			value={query}
-			onChange={(e) => onSearch(e.target.value)}
+			onChange={(e) => setQuery(e.target.value)}
 		/>
 	);
 }
